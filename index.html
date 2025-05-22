@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>哲思探尋：認真之大夢</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Visualization & Content Choices:
+        - Original Text Display: Goal: Present the source. Method: Formatted text. Interaction: Clickable phrases linking to analysis. Justification: Direct access and connection to interpretation.
+        - Core Themes Sections: Goal: Explain key concepts. Method: Summarized analysis, key quotes. Interaction: Expandable details, conceptual HTML/CSS visuals. Justification: Layered information disclosure, enhanced understanding of abstract ideas.
+        - Philosophical Comparison Table (HTML): Goal: Compare with other philosophies. Method: HTML table from analysis. Interaction: Hover/click for details. Justification: Clear, structured comparison. Library: N/A (HTML/CSS).
+        - All content is textual or presented via structured HTML/CSS. No Chart.js or Plotly.js needed as there is no quantitative data to visualize.
+        -->
+    <style>
+        body {
+            font-family: 'Noto Sans TC', sans-serif; /* A common traditional Chinese font */
+        }
+        .content-section {
+            display: none;
+        }
+        .content-section.active {
+            display: block;
+        }
+        .nav-link {
+            cursor: pointer;
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        .nav-link:hover, .nav-link.active {
+            background-color: #0D9488; /* Slightly darker teal for hover/active */
+            color: white;
+        }
+        .nav-link.active {
+             font-weight: bold;
+        }
+        .expand-button {
+            cursor: pointer;
+            color: #D97706; /* amber-600 */
+            font-weight: bold;
+            margin-left: 8px;
+        }
+        .expand-content {
+            display: none;
+            margin-top: 0.5rem;
+            padding-left: 1rem;
+            border-left: 2px solid #FBBF24; /* amber-400 */
+        }
+        .tooltip {
+            position: relative;
+            display: inline-block;
+            border-bottom: 1px dotted #374151; /* gray-700 */
+            cursor: help;
+        }
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 220px;
+            background-color: #374151; /* gray-700 */
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 5px 0;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -110px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .tooltip .tooltiptext::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: #374151 transparent transparent transparent;
+        }
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+        .table-container {
+            overflow-x: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #D1D5DB; /* gray-300 */
+            padding: 0.75rem;
+            text-align: left;
+        }
+        th {
+            background-color: #F3F4F6; /* gray-100 */
+        }
+        h2 { margin-bottom: 1rem; }
+        h3 { margin-bottom: 0.75rem; margin-top:1.5rem; }
+        p { margin-bottom: 0.75rem; line-height: 1.8; }
+        .interactive-quote {
+            font-style: italic;
+            color: #047857; /* teal-700 */
+            cursor: pointer;
+            border-bottom: 1px dashed #06B6D4; /* cyan-500 */
+        }
+         .interactive-quote:hover {
+            color: #06B6D4; /* cyan-500 */
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 100;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 10% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 600px;
+            border-radius: 8px;
+            position: relative;
+        }
+        .close-button {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .close-button:hover,
+        .close-button:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body class="bg-amber-50 text-stone-800 min-h-screen flex flex-col">
+
+    <header class="bg-teal-700 text-white shadow-lg sticky top-0 z-50">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <h1 class="text-xl sm:text-2xl font-bold">哲思探尋：認真之大夢</h1>
+                <nav class="hidden md:flex space-x-1">
+                    <a class="nav-link active" data-target="intro">引言</a>
+                    <a class="nav-link" data-target="original-text">原典探微</a>
+                    <a class="nav-link" data-target="core-analysis">核心解析</a>
+                    <a class="nav-link" data-target="comparison">哲學比較</a>
+                    <a class="nav-link" data-target="conclusion">總結洞見</a>
+                </nav>
+                <button id="mobile-menu-button" class="md:hidden text-white focus:outline-none">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
+                </button>
+            </div>
+        </div>
+        <div id="mobile-menu" class="md:hidden hidden bg-teal-600">
+            <a class="block nav-link text-white py-2 px-4" data-target="intro">引言</a>
+            <a class="block nav-link text-white py-2 px-4" data-target="original-text">原典探微</a>
+            <a class="block nav-link text-white py-2 px-4" data-target="core-analysis">核心解析</a>
+            <a class="block nav-link text-white py-2 px-4" data-target="comparison">哲學比較</a>
+            <a class="block nav-link text-white py-2 px-4" data-target="conclusion">總結洞見</a>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-grow">
+        <div id="intro" class="content-section active">
+            <h2 class="text-3xl font-semibold text-teal-800 border-b-2 border-amber-500 pb-2">引言：意識之夢的勇氣</h2>
+            <p class="mt-4">歡迎來到「哲思探尋：認真之大夢」互動應用程式。此應用旨在引導您深入探索一篇充滿智慧的哲學文本，該文本以「天下之大勇，莫過於作一場認真之大夢」為開端，揭示了一種積極且深邃的生命態度。本應用程式將呈現文本的評析，助您理解其關於實相、自我、行動與解脫的核心論點，並與東西方哲學傳統進行對照。</p>
+            <p>此篇哲學文本並非引導人們逃避生命如夢似幻的本質，而是呼籲以一種「認真」且勇毅的姿態，有意識地參與並體驗這場「大夢」。此開篇即奠定了全文的基調：重視在看似虛幻的生命歷程中，個體主動的、有意識的參與，而非被動的接受或虛無的否定。</p>
+            <p>文本所倡導的「認真之大夢」，超越了對「人生如夢」這一古老譬喻的消極詮釋。常見的「人生如夢」觀念，或引向避世的超脫，或導致宿命的無奈。然而，文本中「認真之」三字，賦予了此「夢」一番截然不同的意涵。它不再僅僅指涉一種客觀的虛幻狀態，而轉化為一種主觀選擇的、充滿意義的生命體驗，即便其終極本質依然如夢。這種在「夢」中積極作為、認真以待的生命姿態，被譽為「天下之大勇」，突顯了對有意識、有目標地生活的極高推崇。此開篇即挑戰了將東方哲學簡單化約為全然否定現實世界的刻板印象，反而指引了一條積極入世、靈性參與的道路。</p>
+        </div>
+
+        <div id="original-text" class="content-section">
+            <h2 class="text-3xl font-semibold text-teal-800 border-b-2 border-amber-500 pb-2">原典探微</h2>
+            <p class="mt-4">以下為本次探討的原始哲學文本。您可以點擊文本中的特定語句（以虛線標示），查看相關的解析摘要。</p>
+            <div class="bg-white p-6 rounded-lg shadow my-4 text-lg leading-loose">
+                <p><span class="interactive-quote" data-key="dream_courage">天下之大勇，莫過於作一場認真之大夢。</span><span class="interactive-quote" data-key="present_moment">與其布施於將來，不如布施於當下。</span>沉湎於既往或迷失於未來，皆無所益。欲越血海而至者，豈天堂哉？</p>
+                <p><span class="interactive-quote" data-key="heaven_within">此在即天堂，處處皆天堂也。</span><span class="interactive-quote" data-key="grasp_present">握此在、此生、此夢，須彌化芥子，芥子化須彌。此在之剎那即為永恆。</span><span class="interactive-quote" data-key="emptiness_existence">因空而有，因夢而實，因死而生。</span>此念即世界，世界即此念，破執破妄。</p>
+                <p><span class="interactive-quote" data-key="effortless_action">彼努力救世，然不在乎得失。其進退疾徐，從容無比。</span>汝是否真參透回向之奧義，奮力擊槳逆水行舟乎？執著於夢毫無益處，內心之圓融與渴求究竟為何？</p>
+                <p><span class="interactive-quote" data-key="true_person">當為真人。</span><span class="interactive-quote" data-key="protagonist_self">汝乃世界之主角，何必沉溺於他人之評判？吾心光明，無所求亦無所不求。</span>或許上天賜汝參透之契機，然非求仙拜佛式之信仰，乃欲使汝於大起大落中顛仆。</p>
+                <p><span class="interactive-quote" data-key="impermanence_fearlessness">既知浮生若夢，又何懼夢之幻滅？</span><span class="interactive-quote" data-key="authentic_self">今日方知我是我，從心所欲，何懼柳絮之輕浮零落？握住此在，便足矣。</span></p>
+            </div>
+        </div>
+
+        <div id="core-analysis" class="content-section">
+            <h2 class="text-3xl font-semibold text-teal-800 border-b-2 border-amber-500 pb-2">核心解析</h2>
+            <p class="mt-4">本部分深入剖析哲學文本中的核心概念，包括夢與實相的關係、當下即天堂的體悟、「真人」的理想人格，以及如何擁抱無常並實現本真自我。點擊各主題旁的<span class="expand-button">[展開]</span>以閱讀詳細內容。</p>
+
+            <div class="mt-6">
+                <h3 class="text-2xl font-medium text-teal-700">一、編織實相：夢、空性與當下天堂的交響 <span class="expand-button" onclick="toggleExpand(this, 'analysis-1')">[展開]</span></h3>
+                <div id="analysis-1" class="expand-content">
+                    <p>此部分探討文本如何處理夢境與真實、空性與存在，以及當下即是解脫之境的觀念。</p>
+                    <h4>A. 夢、實相與「物化」</h4>
+                    <p>文本開篇「天下之大勇，莫過於作一場認真之大夢」，呼應莊子「莊周夢蝶」的典故，揭示區分真實與虛幻的困難。然而，文本更倡導「認真」體驗此「大夢」，暗示對流動實相有意識的擁抱。 「與其布施於將來，不如布施於當下」則強調當下時刻的至關重要性。</p>
+                    <h4>B. 「此在即天堂」：內蘊的超越與當下時刻</h4>
+                    <p>「此在即天堂，處處皆天堂也」是對內蘊解脫的激進肯定，與禪宗強調「當下即是」產生共鳴。覺悟並非遙遠未來，而是當下直接體驗的可能。存在主義亦強調「存在先於本質」，生命意義在當下選擇中創造。「握此在、此生、此夢，須彌化芥子，芥子化須彌。此在之剎那即為永恆」闡釋了當下時刻的無限潛能與感知的相對性，超越常規時空限制。天堂非彼岸，而是此刻此地可實現的覺醒狀態。</p>
+                    <h4>C. 「因空而有，因夢而實，因死而生」：創生性的虛空與轉化循環</h4>
+                    <p>此三聯句揭示消極/虛幻狀態與積極/真實結果間的互動。「因空而有」呼應佛家「空性」非虛無，而是萬法生滅變化的條件。「因夢而實」指若「夢」被「認真」體驗，便成「實」的所在，真實是通過在「夢」中有意識參與而實現。「因死而生」闡述循環轉化，死亡非終結，而是新生前奏。實相非固定，而是有意識投入於空性、夢幻無常及循環轉化下湧現的特質。</p>
+                </div>
+            </div>
+
+            <div class="mt-6">
+                <h3 class="text-2xl font-medium text-teal-700">二、「真人」之道：行動、超越與光明的本真 <span class="expand-button" onclick="toggleExpand(this, 'analysis-2')">[展開]</span></h3>
+                <div id="analysis-2" class="expand-content">
+                    <p>此部分探討文本中理想人格「真人」的特質，如何在積極入世的同時保持內在超越，並忠於自身的光明本性。</p>
+                    <h4>A. 入世的努力與安然的超越</h4>
+                    <p>「彼努力救世，然不在乎得失。其進退疾徐，從容無比」描繪了積極投身世界卻又內在超越的人物。這與道家「無為」（行動自發自然，不帶功利）及大乘佛教菩薩（發願救度眾生，不執著成果）理想契合。其行動方式與內在狀態同等重要。</p>
+                    <h4>B. 「當為真人」的呼喚</h4>
+                    <p>「真人」是道家《莊子》核心理想人格，體現大道，順乎自然，真實無妄。此概念亦呼應存在主義的「本真」。文本中的「真人」不僅避世，更是積極入世、從容應對、忠於內心光明之人，呈現了積極入世的道家理想詮釋。</p>
+                    <h4>C. 主宰的自我：光明的心與超越外在評價的自由</h4>
+                    <p>「汝乃世界之主角，何必沉溺於他人之評判？吾心光明，無所求亦無所求。」肯定個體能動性與核心地位，呼籲從外在評價中獨立。「吾心光明」暗示自我本性中固有的光明圓滿特質，是內在指引與自足的源泉。「無所求亦無所求」強調深刻的滿足與無所營求，是終極的自由與安寧。</p>
+                    <h4>D. 「迴向」之謎與真實的奮鬥</h4>
+                    <p>「汝是否真參透回向之奧義，奮力擊槳逆水行舟乎？」將佛家無私奉獻的「迴向」與艱苦努力聯繫，暗示真正奉獻包含積極、具挑戰的參與。若生命如夢，執著無益，則此奮鬥的本質在於其品質——源於「迴向」、旨在達成「內心之圓融」的努力，而非自我中心的執著。</p>
+                </div>
+            </div>
+
+            <div class="mt-6">
+                <h3 class="text-2xl font-medium text-teal-700">三、擁抱無常與主宰的自我 <span class="expand-button" onclick="toggleExpand(this, 'analysis-3')">[展開]</span></h3>
+                <div id="analysis-3" class="expand-content">
+                    <p>此部分闡述了知生命如夢的本質如何引導我們無畏面對幻滅，並在當下實現本真自我，獲得圓滿。</p>
+                    <h4>A. 面對夢境消散的無畏</h4>
+                    <p>「既知浮生若夢，又何懼夢之幻滅？」對生命如夢、變幻無常本質的了知，非引向絕望，而是導向無畏。呼應莊子視死亡與變遷為自然轉化，及佛家「無常」教義，通過超越執著減少痛苦。此文本將「浮生若夢」的體悟轉化為無畏的源泉。</p>
+                    <h4>B. 本真自我的實現與當下的圓滿</h4>
+                    <p>「今日方知我是我，從心所欲，何懼柳絮之輕浮零落？握住此在，便足矣。」「今日方知我是我」是自我實現與本真性的宣告，標誌個體回歸自身真實本性。「從心所欲」在「真人」與「吾心光明」語境下，指依循本真光明核心而行動。「握住此在，便足矣」重申當下即圓滿，真正滿足來自對「此時此地」的全然擁抱。這是根植於真知和當下覺知的解脫之道。</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="comparison" class="content-section">
+            <h2 class="text-3xl font-semibold text-teal-800 border-b-2 border-amber-500 pb-2">哲學比較</h2>
+            <p class="mt-4">此文本的思想與多個哲學傳統均有共鳴與對話。下表比較了文本中所述「真人」與道家、佛家及存在主義中理想人格的特徵。深入理解這些比較有助於把握文本的獨特性及其在廣闊哲學光譜中的定位。</p>
+            <div class="table-container mt-6 bg-white p-4 rounded-lg shadow">
+                <h3 class="text-xl font-medium text-teal-700 mb-3">表一：不同哲學傳統中理想人格之比較</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>特徵</th>
+                            <th>文本所述之「真人」</th>
+                            <th>道家之「真人」</th>
+                            <th>佛教之菩薩</th>
+                            <th>存在主義之本真自我</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>核心認同</strong></td>
+                            <td>內心光明，世界主角，我是我</td>
+                            <td>與道合一，順乎自然</td>
+                            <td>覺悟有情，為利眾生而成佛</td>
+                            <td>自由選擇，自我創造，對自身存在負責</td>
+                        </tr>
+                        <tr>
+                            <td><strong>實相觀</strong></td>
+                            <td>認真之大夢，此在即天堂，因空而有</td>
+                            <td>道為本源，萬物齊一，夢與覺難分</td>
+                            <td>緣起性空，諸法無我，輪迴與涅槃</td>
+                            <td>世界無內在意義，存在先於本質，荒謬感</td>
+                        </tr>
+                        <tr>
+                            <td><strong>行動模式</strong></td>
+                            <td>努力救世，從容無比，從心所欲</td>
+                            <td>無為而無不為，順應自然</td>
+                            <td>六度萬行，慈悲喜捨，不疲不厭</td>
+                            <td>自由選擇，承擔責任，積極行動以創造意義</td>
+                        </tr>
+                        <tr>
+                            <td><strong>對待結果</strong></td>
+                            <td>不在乎得失</td>
+                            <td>超越得失，不以物喜，不以己悲</td>
+                            <td>不住相布施，三輪體空</td>
+                            <td>關注行動本身及對自我塑造的影響，而非外在成功</td>
+                        </tr>
+                        <tr>
+                            <td><strong>與他者/世界關係</strong></td>
+                            <td>救世，回向，主角意識但超越他人評判</td>
+                            <td>齊物，與天地精神往來</td>
+                            <td>普度眾生，冤親平等</td>
+                            <td>他人即地獄（沙特負面觀），或在關係中尋求本真（正面觀）</td>
+                        </tr>
+                        <tr>
+                            <td><strong>終極目標/狀態</strong></td>
+                            <td>內心圓融，無所求亦無所求，握住此在便足矣</td>
+                            <td>逍遙遊，與道同體</td>
+                            <td>證無上菩提，令一切眾生入無餘涅槃</td>
+                            <td>活出本真，實現自由，賦予生命意義</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="conclusion" class="content-section">
+            <h2 class="text-3xl font-semibold text-teal-800 border-b-2 border-amber-500 pb-2">總結洞見</h2>
+            <p class="mt-4">此部分對哲學文本進行綜合評價，探討其主題的連貫性、獨特貢獻，並總結其核心的「積極的本真性」哲學觀。</p>
+            
+            <h3 class="text-2xl font-medium text-teal-700">A. 哲學主題的連貫與整合</h3>
+            <p>此文本巧妙地將道家（夢、真人、自然無為的行動）、佛家（當下、空性、慈悲、功德迴向）與存在主義（本真性、自我創造、不受外在評價束縛）等哲學思想的元素編織在一起，形成一個連貫的整體。其內在邏輯清晰可見：「認真之大夢」由「真人」來體驗，其行動特徵為超越的參與，其現實感植根於「當下即天堂」的體悟，而這一切又以對空性與存在相互作用的理解為基礎。</p>
+
+            <h3 class="text-2xl font-medium text-teal-700">B. 獨特的貢獻與細膩的闡釋</h3>
+            <p>文本的獨到之處在於：將「人生如夢」的觀念從被動的虛幻感轉化為積極的「認真之大夢」；塑造了一個積極入世、慈悲為懷卻又灑脫自在的「真人」形象；強調了「此在即天堂」的徹底內在性，並將其根植於「今日方知我是我」的自我覺醒；以及對「迴向」作出了充滿活力的詮釋，視其為艱苦卓絕、無私奉獻的動力源泉。</p>
+
+            <h3 class="text-2xl font-medium text-teal-700">C. 「積極的本真性」哲學</h3>
+            <p>總體而言，此文本所倡導的哲學立場可被視為一種「積極的本真性」——在生命如夢的流變中，以勇氣、目標和深刻的自我覺知來生活。它提供了一條解脫之道，其要義並非逃離世界，而是轉化個體與世界的關係，並體認到自身心靈本具的光明與圓滿。其終極的哲學旨歸，在於一種於此生、此夢、此當下即可實現的救贖或解脫，這通過意識的轉化與本真自我的展現而達成，而非寄望於超越的領域或未來的狀態。</p>
+
+            <h3 class="text-2xl font-medium text-teal-700">D. 總結反思</h3>
+            <p>此文本所蘊含的洞見，對於指引人們在複雜的塵世中探尋意義、修養內在自由，具有持久的啟發性。其所描繪的「真人」形象，不僅是一個形上學或靈性上的理想，更為塵世中的倫理行動提供了一個連貫且引人深思的典範——其特徵為慈悲的努力、對結果的不執著以及堅定不移的本真。這種積極的仁愛、內在的平和以及忠於自我的指引相結合，構成了一個堅實的倫理框架。此哲學並非僅是一系列抽象觀念的集合，而是形成了一套指引人們如何勇敢、有意義且自由地生活的完整指南。它成功地將深刻的形上洞見與實用的倫理指引相融合，使其成為哲學反思與個人修養的豐富資源。其綜合並非簡單的拼湊，而是一種創造性的重新闡釋，由此產生了一種獨特而強大的生命願景。</p>
+        </div>
+    </main>
+
+    <div id="quoteModal" class="modal">
+        <div class="modal-content bg-white rounded-lg shadow-xl p-6">
+            <span class="close-button" onclick="closeModal()">&times;</span>
+            <h3 id="modalTitle" class="text-xl font-semibold text-teal-700 mb-3">相關解析</h3>
+            <p id="modalText" class="text-stone-700 leading-relaxed"></p>
+        </div>
+    </div>
+
+    <footer class="bg-teal-800 text-amber-50 py-6 text-center">
+        <p>&copy; 2024 哲思探尋。保留所有權利。</p>
+    </footer>
+
+    <script>
+        const navLinks = document.querySelectorAll('.nav-link');
+        const contentSections = document.querySelectorAll('.content-section');
+        const mobileMenuButton = document.getElementById('mobile-menu-button');
+        const mobileMenu = document.getElementById('mobile-menu');
+        const quoteModal = document.getElementById('quoteModal');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalText = document.getElementById('modalText');
+
+        const quoteExplanations = {
+            dream_courage: "「天下之大勇，莫過於作一場認真之大夢。」：此句強調以積極、有意識的態度投入看似虛幻的人生，將生命視為一場值得認真體驗的「大夢」。這份勇氣在於擁抱不確定性，並在其中創造意義。",
+            present_moment: "「與其布施於將來，不如布施於當下。」：強調把握此刻的重要性，批判沉湎過去或迷失未來。真正的行動與價值創造發生在當下。",
+            heaven_within: "「此在即天堂，處處皆天堂也。」：揭示解脫與至福並非外在或遙遠的目標，而是內蘊於當下時刻的覺醒狀態。天堂是一種生命境界，可在此時此地實現。",
+            grasp_present: "「握此在、此生、此夢，須彌化芥子，芥子化須彌。此在之剎那即為永恆。」：闡釋當下蘊含的無限潛能。全然把握當下，則能超越常規時空限制，體驗剎那的永恆性，宏大與微小亦可相互轉化。",
+            emptiness_existence: "「因空而有，因夢而實，因死而生。」：揭示看似消極的狀態（空、夢、死）與積極結果（有、實、生）間的創生性關係。空性是萬物生成的條件，認真體驗的夢境構成真實，死亡是新生的前奏。",
+            effortless_action: "「彼努力救世，然不在乎得失。其進退疾徐，從容無比。」：描繪理想人格「真人」的行動模式：積極入世救助，同時保持內心超然，不為結果所縛，行動從容自在，合乎自然。",
+            true_person: "「當為真人。」：呼喚個體成為真實無妄、順乎自然、超越世俗分別的「真人」。這是道家思想中的理想人格，也與存在主義的「本真」概念相呼應。",
+            protagonist_self: "「汝乃世界之主角，何必沉溺於他人之評判？吾心光明，無所求亦無所不求。」：肯定個體的自主性與核心地位，鼓勵擺脫外在評價的束縛。內心本具光明，達到無所求的自足圓滿境界。",
+            impermanence_fearlessness: "「既知浮生若夢，又何懼夢之幻滅？」：了悟生命如夢、變幻無常的本質，並非引向消極，而是帶來無畏。若能洞悉一切現象的短暫性，便能從對失落和幻滅的恐懼中解脫。",
+            authentic_self: "「今日方知我是我，從心所欲，何懼柳絮之輕浮零落？握住此在，便足矣。」：宣告自我實現與本真性的達成。認識真實自我後，便能自由地依循內心光明而行動，無懼無常變化，在當下覓得圓滿與足夠。"
+        };
+
+        function showContent(targetId) {
+            contentSections.forEach(section => {
+                section.classList.remove('active');
+            });
+            document.getElementById(targetId).classList.add('active');
+
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.dataset.target === targetId) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        navLinks.forEach(link => {
+            link.addEventListener('click', (event) => {
+                event.preventDefault();
+                const targetId = link.dataset.target;
+                showContent(targetId);
+                if (mobileMenu.classList.contains('hidden') === false) {
+                    mobileMenu.classList.add('hidden');
+                }
+            });
+        });
+
+        mobileMenuButton.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+
+        window.toggleExpand = function(button, elementId) {
+            const content = document.getElementById(elementId);
+            if (content.style.display === 'block') {
+                content.style.display = 'none';
+                button.textContent = '[展開]';
+            } else {
+                content.style.display = 'block';
+                button.textContent = '[收合]';
+            }
+        }
+
+        document.querySelectorAll('.interactive-quote').forEach(quote => {
+            quote.addEventListener('click', function() {
+                const key = this.dataset.key;
+                if (quoteExplanations[key]) {
+                    modalText.textContent = quoteExplanations[key];
+                    quoteModal.style.display = "block";
+                }
+            });
+        });
+
+        window.closeModal = function() {
+            quoteModal.style.display = "none";
+        }
+
+        window.onclick = function(event) {
+            if (event.target == quoteModal) {
+                quoteModal.style.display = "none";
+            }
+        }
+
+        // Initialize with the intro section
+        showContent('intro');
+
+    </script>
+</body>
+</html>
